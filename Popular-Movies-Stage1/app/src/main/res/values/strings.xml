@@ -1,3 +1,20 @@
 <resources>
     <string name="app_name">Popular-Movies-Stage1</string>
+
+   <!--URLs for our API -->
+    <string name="base_url">http://api.themoviedb.org/3/movie/</string>
+    <string name="popular">popular?api_key</string>
+    <string name="top_rated">top_rated?api_key</string>
+
+    <!-- Image URLs -->
+    <!--
+The base URL will look like: http://image.tmdb.org/t/p/.
+Then you will need a ‘size’, which will be one of the following: "w92", "w154", "w185", "w342", "w500", "w780", or "original". For most phones we recommend using “w185”.
+And finally the poster path returned by the query, in this case “/nBNZadXqJSdt05SHLqgT0HuC5Gm.jpg”
+-->
+    <string name="image_base_url">http://image.tmdb.org/t/p/w185/</string>
+
+    <string name="exmaple">https://api.themoviedb.org/3/movie/550?api_key=97416d9cb95fd109aaa5e3025b3063fd</string>
+    <string name="key">97416d9cb95fd109aaa5e3025b3063fd</string>
+    <string name="token">eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5NzQxNmQ5Y2I5NWZkMTA5YWFhNWUzMDI1YjMwNjNmZCIsInN1YiI6IjU5MDM3MjNkOTI1MTQxNzdlZTAwMTBlYSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.E91l9JSkHuT_Hi4y0WxeVaCYa2jgm1XTtiVMDweDEUo</string>
 </resources>

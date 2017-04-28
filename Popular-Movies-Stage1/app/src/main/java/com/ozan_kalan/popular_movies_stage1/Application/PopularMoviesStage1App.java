@@ -1,4 +1,4 @@
-package com.ozan_kalan.popular_movies_stage1;
+package com.ozan_kalan.popular_movies_stage1.Application;
 
 import android.app.Application;
 
