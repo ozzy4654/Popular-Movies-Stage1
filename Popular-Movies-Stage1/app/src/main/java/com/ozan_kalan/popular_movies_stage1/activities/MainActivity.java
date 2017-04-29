@@ -27,6 +27,12 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import static com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivity.MOVIE_DATE;
+import static com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivity.MOVIE_OVERVIEW;
+import static com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivity.MOVIE_POSTER;
+import static com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivity.MOVIE_RATING;
+import static com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivity.MOVIE_TITLE;
+
 public class MainActivity extends AppCompatActivity implements RecyclerViewMovieAdapter.MovieAdapterOnClickHandler{
 
     private RecyclerViewMovieAdapter mMovieAdapter;
@@ -147,10 +153,18 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
 
     @Override
     public void onClick(MovieResult movieResult) {
-        System.out.println(movieResult.originalTitle);
-
         Intent intent = new Intent(this, MovieDetailsActivity.class);
-//        intent.
+
+        Bundle bundle = new Bundle();
+
+        bundle.putString(MOVIE_POSTER, movieResult.posterPath);
+        bundle.putString(MOVIE_OVERVIEW, movieResult.overview);
+        bundle.putString(MOVIE_TITLE, movieResult.originalTitle);
+        bundle.putString(MOVIE_DATE, movieResult.releaseDate);
+        bundle.putDouble(MOVIE_RATING, movieResult.voteAverage);
+
+        intent.putExtras(bundle);
+
         startActivity(intent);
     }
 }
