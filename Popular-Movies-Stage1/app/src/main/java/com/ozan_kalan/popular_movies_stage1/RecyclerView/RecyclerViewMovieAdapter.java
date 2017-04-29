@@ -6,19 +6,25 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.ozan_kalan.popular_movies_stage1.Models.MovieList;
+import com.ozan_kalan.popular_movies_stage1.Models.MovieResult;
 import com.ozan_kalan.popular_movies_stage1.R;
 import com.squareup.picasso.Picasso;
+
+import java.util.List;
 
 /**
  * Created by ozan.kalan on 4/28/17.
  */
 
 public class RecyclerViewMovieAdapter extends RecyclerView.Adapter<RecyclerViewMovieAdapter.MovieAdapterViewHolder> {
-
-    private String[] mPosterData = new String[6];
+    private List<MovieResult> mPosterData;
 
     /** Default constructor */
-    public RecyclerViewMovieAdapter() {}
+    public RecyclerViewMovieAdapter(List<MovieResult> movieList) {
+        System.out.println(movieList.get(0).originalTitle);
+        mPosterData = movieList;
+    }
 
     @Override
     public MovieAdapterViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -28,26 +34,25 @@ public class RecyclerViewMovieAdapter extends RecyclerView.Adapter<RecyclerViewM
         return new MovieAdapterViewHolder(view);
     }
 
-    public void setData(String[] array) {
-        mPosterData = array;
+    public void setData(MovieList movieList) {
+        mPosterData = movieList.movieResults;
         notifyDataSetChanged();
     }
 
     @Override
     public void onBindViewHolder(MovieAdapterViewHolder holder, int position) {
-//        String posterEndPoint = mPosterData[position];
 
         Picasso.with(holder.mPoster.getContext())
-                .load(R.mipmap.ic_launcher)
+                .load(holder.itemView.getContext().getString(R.string.image_base_url)
+                        + mPosterData.get(position).posterPath)
                 .into(holder.mPoster);
-
     }
 
     @Override
     public int getItemCount() {
         if(mPosterData == null)
             return 0;
-        return mPosterData.length;
+        return mPosterData.size();
     }
 
     public class MovieAdapterViewHolder extends RecyclerView.ViewHolder {

@@ -31,6 +31,9 @@ dependencies {
     // network lib
     compile 'com.squareup.okhttp3:okhttp:3.7.0'
 
+    // JSON lib
+    compile 'com.google.code.gson:gson:2.8.0'
+
     // memory leak lib
     debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.1'
     releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
