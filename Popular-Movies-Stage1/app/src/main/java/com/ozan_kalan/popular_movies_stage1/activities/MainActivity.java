@@ -1,5 +1,6 @@
 package com.ozan_kalan.popular_movies_stage1.activities;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -146,7 +147,10 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
 
     @Override
     public void onClick(MovieResult movieResult) {
-        System.out.println("FUCKCKCKCKCKCCKCKCKCKCKC");
         System.out.println(movieResult.originalTitle);
+
+        Intent intent = new Intent(this, MovieDetailsActivity.class);
+//        intent.
+        startActivity(intent);
     }
 }
