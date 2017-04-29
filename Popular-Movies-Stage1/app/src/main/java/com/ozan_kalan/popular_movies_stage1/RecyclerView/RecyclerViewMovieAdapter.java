@@ -17,13 +17,17 @@ import java.util.List;
  * Created by ozan.kalan on 4/28/17.
  */
 
-public class RecyclerViewMovieAdapter extends RecyclerView.Adapter<RecyclerViewMovieAdapter.MovieAdapterViewHolder> {
+public class RecyclerViewMovieAdapter extends RecyclerView.Adapter<RecyclerViewMovieAdapter.MovieAdapterViewHolder>  {
     private List<MovieResult> mPosterData;
 
-    /** Default constructor */
-    public RecyclerViewMovieAdapter(List<MovieResult> movieList) {
-        System.out.println(movieList.get(0).originalTitle);
-        mPosterData = movieList;
+    private final MovieAdapterOnClickHandler mClickHandler;
+
+    public interface MovieAdapterOnClickHandler {
+        void onClick(MovieResult movieResult);
+    }
+
+    public RecyclerViewMovieAdapter(MovieAdapterOnClickHandler clickHandler) {
+        mClickHandler = clickHandler;
     }
 
     @Override
@@ -35,6 +39,8 @@ public class RecyclerViewMovieAdapter extends RecyclerView.Adapter<RecyclerViewM
     }
 
     public void setData(MovieList movieList) {
+        if(mPosterData != null)
+            mPosterData.clear();
         mPosterData = movieList.movieResults;
         notifyDataSetChanged();
     }
@@ -55,13 +61,22 @@ public class RecyclerViewMovieAdapter extends RecyclerView.Adapter<RecyclerViewM
         return mPosterData.size();
     }
 
-    public class MovieAdapterViewHolder extends RecyclerView.ViewHolder {
+    public class MovieAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         final ImageView mPoster;
 
         public MovieAdapterViewHolder(View itemView) {
             super(itemView);
             mPoster = (ImageView) itemView.findViewById(R.id.item_main_poster);
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            int x = getAdapterPosition();
+            MovieResult movieResult = mPosterData.get(x);
+            mClickHandler.onClick(movieResult);
+
         }
     }
 }
