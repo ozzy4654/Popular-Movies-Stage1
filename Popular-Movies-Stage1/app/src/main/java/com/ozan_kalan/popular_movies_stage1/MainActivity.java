@@ -57,6 +57,8 @@ public class MainActivity extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
+
+                // TODO: 4/28/17 set a veiw to display something went wrong with the network 
             }
 
             @Override public void onResponse(Call call, Response response) throws IOException {
