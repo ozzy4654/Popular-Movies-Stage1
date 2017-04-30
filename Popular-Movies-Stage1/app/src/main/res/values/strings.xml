@@ -7,8 +7,8 @@
 
     <string name="popular">popular?api_key</string>
     <string name="top_rated">top_rated?api_key</string>
-    <string name="key">=97416d9cb95fd109aaa5e3025b3063fd</string>
-    <string name="token">eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5NzQxNmQ5Y2I5NWZkMTA5YWFhNWUzMDI1YjMwNjNmZCIsInN1YiI6IjU5MDM3MjNkOTI1MTQxNzdlZTAwMTBlYSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.E91l9JSkHuT_Hi4y0WxeVaCYa2jgm1XTtiVMDweDEUo</string>
+
+    <string name="key">=</string>
 
     <!---->
     <string name="error">A network error has transpired</string>

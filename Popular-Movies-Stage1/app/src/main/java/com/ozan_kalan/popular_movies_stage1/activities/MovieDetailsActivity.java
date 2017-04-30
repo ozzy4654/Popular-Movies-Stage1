@@ -19,14 +19,11 @@ public class MovieDetailsActivity extends AppCompatActivity {
     public static final String MOVIE_OVERVIEW = "movie_desc";
     public static final String MOVIE_DATE = "movie_date";
 
-
-
     @BindView(R.id.movie_title_txt_view) TextView mTitle;
     @BindView(R.id.release_date_txt_view) TextView mReleaseDate;
     @BindView(R.id.rating_txt_view) TextView mRating;
     @BindView(R.id.movie_poster_img_view) ImageView mPoster;
     @BindView(R.id.overview_txt_view) TextView mOverview;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +32,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setUpViews();
-
     }
 
     private void setUpViews() {
@@ -50,7 +46,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
         Picasso.with(this).load(getString(R.string.image_base_url) + bundle.getString(MOVIE_POSTER))
                 .into(mPoster);
-
     }
 
 }
