@@ -1,6 +1,7 @@
 package com.ozan_kalan.popular_movies_stage1.activities;
 
 import android.content.Intent;
+import android.support.annotation.StringRes;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -92,8 +93,16 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
         client.newCall(request).enqueue(new Callback() {
             @Override public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
-                mRecyclerView.setVisibility(View.INVISIBLE);
-                mError.setVisibility(View.VISIBLE);
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mRecyclerView.setVisibility(View.INVISIBLE);
+                        mError.setVisibility(View.VISIBLE);
+                        mError.setText(getString(R.string.error));
+                    }
+                });
+
 
             }
 
