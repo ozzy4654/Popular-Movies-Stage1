@@ -3,19 +3,21 @@
 
     <!--URLs for our API -->
     <string name="base_url">http://api.themoviedb.org/3/movie/</string>
-    <string name="popular">popular?api_key</string>
-    <string name="top_rated">top_rated?api_key</string>
-
-    <!-- Image URLs -->
     <string name="image_base_url">http://image.tmdb.org/t/p/w185/</string>
 
+    <string name="popular">popular?api_key</string>
+    <string name="top_rated">top_rated?api_key</string>
     <string name="key">=97416d9cb95fd109aaa5e3025b3063fd</string>
     <string name="token">eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5NzQxNmQ5Y2I5NWZkMTA5YWFhNWUzMDI1YjMwNjNmZCIsInN1YiI6IjU5MDM3MjNkOTI1MTQxNzdlZTAwMTBlYSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.E91l9JSkHuT_Hi4y0WxeVaCYa2jgm1XTtiVMDweDEUo</string>
-    <string name="error">A network error has transpired</string>
-    <string name="title_activity_movie_details">MovieDetailsActivity</string>
 
+    <!---->
+    <string name="error">A network error has transpired</string>
+    <string name="title_activity_movie_details">Movie Details</string>
 
     <string name="pop_movie_title">Popular Movies</string>
     <string name="top_movie_title">Top Rated Movies</string>
+
+    <string name="rating_out_of_ten">/10</string>
+    <string name="content_discrip_poster_of_the_movie">poster of the movie</string>
 
 </resources>

@@ -35,6 +35,8 @@ import static com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivi
 
 public class MainActivity extends AppCompatActivity implements RecyclerViewMovieAdapter.MovieAdapterOnClickHandler{
 
+    private static final String SEARCH_CATEGORY = "category";
+
     private RecyclerViewMovieAdapter mMovieAdapter;
     private Gson mGson;
 
@@ -156,6 +158,13 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
         Intent intent = new Intent(this, MovieDetailsActivity.class);
 
         Bundle bundle = new Bundle();
+
+        if(getTitle().equals(getString(R.string.top_movie_title))) {
+            bundle.putString(SEARCH_CATEGORY, mTopRated);
+
+        }else
+            bundle.putString(SEARCH_CATEGORY, mPopMovies);
+
 
         bundle.putString(MOVIE_POSTER, movieResult.posterPath);
         bundle.putString(MOVIE_OVERVIEW, movieResult.overview);

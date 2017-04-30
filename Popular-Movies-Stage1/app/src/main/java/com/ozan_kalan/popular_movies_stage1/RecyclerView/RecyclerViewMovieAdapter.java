@@ -17,7 +17,7 @@ import java.util.List;
  * Created by ozan.kalan on 4/28/17.
  */
 
-public class RecyclerViewMovieAdapter extends RecyclerView.Adapter<RecyclerViewMovieAdapter.MovieAdapterViewHolder>  {
+public class RecyclerViewMovieAdapter extends RecyclerView.Adapter<RecyclerViewMovieAdapter.MovieAdapterViewHolder> {
     private List<MovieResult> mPosterData;
 
     private final MovieAdapterOnClickHandler mClickHandler;
@@ -39,7 +39,7 @@ public class RecyclerViewMovieAdapter extends RecyclerView.Adapter<RecyclerViewM
     }
 
     public void setData(MovieList movieList) {
-        if(mPosterData != null)
+        if (mPosterData != null)
             mPosterData.clear();
         mPosterData = movieList.movieResults;
         notifyDataSetChanged();
@@ -56,7 +56,7 @@ public class RecyclerViewMovieAdapter extends RecyclerView.Adapter<RecyclerViewM
 
     @Override
     public int getItemCount() {
-        if(mPosterData == null)
+        if (mPosterData == null)
             return 0;
         return mPosterData.size();
     }

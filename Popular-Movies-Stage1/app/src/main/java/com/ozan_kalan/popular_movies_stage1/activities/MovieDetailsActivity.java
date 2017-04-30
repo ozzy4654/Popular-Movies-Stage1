@@ -15,7 +15,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
     public static final String MOVIE_POSTER = "poster_url";
     public static final String MOVIE_TITLE = "movie_title";
-    public static final String MOVIE_RATING = "movie_ratiing";
+    public static final String MOVIE_RATING = "movie_rating";
     public static final String MOVIE_OVERVIEW = "movie_desc";
     public static final String MOVIE_DATE = "movie_date";
 
@@ -34,21 +34,19 @@ public class MovieDetailsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_movie_details);
         ButterKnife.bind(this);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
         setUpViews();
 
     }
 
     private void setUpViews() {
         Bundle bundle = getIntent().getExtras();
+        String rating = String.valueOf(bundle.getDouble(MOVIE_RATING)) + getString(R.string.rating_out_of_ten);
 
-        ;
-
+        mRating.setText(rating);
         mTitle.setText(bundle.getString(MOVIE_TITLE));
         mOverview.setText(bundle.getString(MOVIE_OVERVIEW));
         mReleaseDate.setText(bundle.getString(MOVIE_DATE).substring(0, 4));
         mTitle.setText(bundle.getString(MOVIE_TITLE));
-
 
         Picasso.with(this).load(getString(R.string.image_base_url) + bundle.getString(MOVIE_POSTER))
                 .into(mPoster);
