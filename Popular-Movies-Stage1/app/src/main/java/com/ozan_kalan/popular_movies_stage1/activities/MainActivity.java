@@ -77,7 +77,16 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
         mMovieAdapter = new RecyclerViewMovieAdapter(this);
         mRecyclerView.setAdapter(mMovieAdapter);
 
-        queryMovieAPI(mTopRated, mKey);
+        if(savedInstanceState != null){
+            if(savedInstanceState.containsKey(SEARCH_CATEGORY)) {
+                queryMovieAPI(savedInstanceState.getString(SEARCH_CATEGORY), mKey);
+            }
+            if (savedInstanceState.containsKey("sroll"))
+                mRecyclerView.setScrollX(savedInstanceState.getInt("sroll"));
+
+
+        } else
+            queryMovieAPI(mTopRated, mKey);
     }
 
     /**
@@ -199,6 +208,17 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle output) {
+        super.onSaveInstanceState(output);
+        output.putInt("sroll",mRecyclerView.getScrollX());
+
+        if (getTitle().equals(getString(R.string.top_movie_title))) {
+            output.putString(SEARCH_CATEGORY, mTopRated);
+        } else
+            output.putString(SEARCH_CATEGORY, mPopMovies);
+    }
+
     /**
      * Handles clicking a poster and sending
      * the user to the details activity
@@ -208,13 +228,6 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
         Intent intent = new Intent(this, MovieDetailsActivity.class);
 
         Bundle bundle = new Bundle();
-
-        if (getTitle().equals(getString(R.string.top_movie_title))) {
-            bundle.putString(SEARCH_CATEGORY, mTopRated);
-
-        } else
-            bundle.putString(SEARCH_CATEGORY, mPopMovies);
-
 
         bundle.putString(MOVIE_POSTER, movieResult.posterPath);
         bundle.putString(MOVIE_OVERVIEW, movieResult.overview);
