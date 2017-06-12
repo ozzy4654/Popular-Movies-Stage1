@@ -1,8 +1,10 @@
 package com.ozan_kalan.popular_movies_stage1.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -20,6 +22,9 @@ import com.ozan_kalan.popular_movies_stage1.R;
 import com.ozan_kalan.popular_movies_stage1.RecyclerView.RecyclerViewMovieAdapter;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -42,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
 
     private RecyclerViewMovieAdapter mMovieAdapter;
     private Gson mGson;
+    private GridLayoutManager layoutManager;
 
     private MovieList mMovieList;
     private String mTopRated;
@@ -59,7 +65,6 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setTitle(R.string.top_movie_title);
         ButterKnife.bind(this);
 
         BASE_URL = getString(R.string.base_url);
@@ -67,26 +72,23 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
         mTopRated = getString(R.string.top_rated);
         mPopMovies = getString(R.string.popular);
         mKey = getString(R.string.key);
-
         mGson = new GsonBuilder().create();
 
-        GridLayoutManager layoutManager
-                = new GridLayoutManager(this, 2);
-
+        layoutManager  = new GridLayoutManager(this, 2);
         mRecyclerView.setLayoutManager(layoutManager);
         mMovieAdapter = new RecyclerViewMovieAdapter(this);
         mRecyclerView.setAdapter(mMovieAdapter);
 
         if(savedInstanceState != null){
-            if(savedInstanceState.containsKey(SEARCH_CATEGORY)) {
-                queryMovieAPI(savedInstanceState.getString(SEARCH_CATEGORY), mKey);
-            }
-            if (savedInstanceState.containsKey("sroll"))
-                mRecyclerView.setScrollX(savedInstanceState.getInt("sroll"));
+            setTitle(savedInstanceState.getString("title", getString(R.string.top_movie_title)));
+            mRecyclerView.scrollTo(0,savedInstanceState.getInt("my", 0));
+            ArrayList<MovieResult> items = savedInstanceState.getParcelableArrayList(SEARCH_CATEGORY);
+            mMovieAdapter.setData(items);
 
-
-        } else
-            queryMovieAPI(mTopRated, mKey);
+        } else {
+            setTitle(R.string.top_movie_title);
+            queryMovieAPI(getString(R.string.top_rated), mKey);
+        }
     }
 
     /**
@@ -180,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
         mError.setVisibility(View.INVISIBLE);
 
         mMovieList = mGson.fromJson(json, MovieList.class);
-        mMovieAdapter.setData(mMovieList);
+        mMovieAdapter.setData(mMovieList.movieResults);
     }
 
     @Override
@@ -211,12 +213,17 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
     @Override
     protected void onSaveInstanceState(Bundle output) {
         super.onSaveInstanceState(output);
-        output.putInt("sroll",mRecyclerView.getScrollX());
 
-        if (getTitle().equals(getString(R.string.top_movie_title))) {
-            output.putString(SEARCH_CATEGORY, mTopRated);
-        } else
-            output.putString(SEARCH_CATEGORY, mPopMovies);
+        output.putParcelableArrayList(SEARCH_CATEGORY, new ArrayList<Parcelable>(mMovieAdapter.getData()));
+
+        if(getTitle().toString().equalsIgnoreCase(getString(R.string.pop_movie_title))) {
+            output.putString("search", getString(R.string.popular));
+            output.putString("title", getString(R.string.pop_movie_title));
+        }
+        else {
+            output.putString("search", getString(R.string.top_rated));
+            output.putString("title", getString(R.string.top_movie_title));
+        }
     }
 
     /**

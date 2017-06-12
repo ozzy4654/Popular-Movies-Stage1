@@ -55,12 +55,17 @@ public class RecyclerViewMovieAdapter extends RecyclerView.Adapter<RecyclerViewM
         return mPosterData.size();
     }
 
-    /** this method updates the adapters data */
-    public void setData(MovieList movieList) {
+    /** this method updates the adapters data
+     * @param movieList*/
+    public void setData(List<MovieResult> movieList) {
         if (mPosterData != null)
             mPosterData.clear();
-        mPosterData = movieList.movieResults;
+        mPosterData = movieList;
         notifyDataSetChanged();
+    }
+
+    public List<MovieResult> getData() {
+        return mPosterData;
     }
 
     protected class MovieAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

@@ -19,5 +19,6 @@
 
     <string name="rating_out_of_ten">/10</string>
     <string name="content_discrip_poster_of_the_movie">poster of the movie</string>
+    <string name="favorites">Favorites</string>
 
 </resources>
