@@ -5,6 +5,8 @@
     <string name="base_url">http://api.themoviedb.org/3/movie/</string>
     <string name="image_base_url">http://image.tmdb.org/t/p/w185/</string>
 
+    <string name="video_endpoint">/videos?api_key</string>
+    <string name="review_endpoint">/reviews?api_key</string>
     <string name="popular">popular?api_key</string>
     <string name="top_rated">top_rated?api_key</string>
 

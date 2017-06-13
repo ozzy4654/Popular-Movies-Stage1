@@ -35,6 +35,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 import static com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivity.MOVIE_DATE;
+import static com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivity.MOVIE_ID;
 import static com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivity.MOVIE_OVERVIEW;
 import static com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivity.MOVIE_POSTER;
 import static com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivity.MOVIE_RATING;
@@ -53,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
     private String mTopRated;
     private String mPopMovies;
     private String mKey;
+    private SharedPreferences.Editor editor;
 
     @BindView(R.id.movies_recycler_view)
     RecyclerView mRecyclerView;
@@ -68,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
         ButterKnife.bind(this);
 
         BASE_URL = getString(R.string.base_url);
-
+        editor = getSharedPreferences("movies", MODE_PRIVATE).edit();
         mTopRated = getString(R.string.top_rated);
         mPopMovies = getString(R.string.popular);
         mKey = getString(R.string.key);
@@ -79,12 +81,15 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
         mMovieAdapter = new RecyclerViewMovieAdapter(this);
         mRecyclerView.setAdapter(mMovieAdapter);
 
-        if(savedInstanceState != null){
+        if (savedInstanceState != null) {
             setTitle(savedInstanceState.getString("title", getString(R.string.top_movie_title)));
             mRecyclerView.scrollTo(0,savedInstanceState.getInt("my", 0));
             ArrayList<MovieResult> items = savedInstanceState.getParcelableArrayList(SEARCH_CATEGORY);
             mMovieAdapter.setData(items);
 
+        } else if (getSharedPreferences("movies", MODE_PRIVATE).getBoolean("pop", false)) {
+            setTitle(R.string.pop_movie_title);
+            queryMovieAPI(getString(R.string.popular), mKey);
         } else {
             setTitle(R.string.top_movie_title);
             queryMovieAPI(getString(R.string.top_rated), mKey);
@@ -197,6 +202,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
 
             setTitle(R.string.pop_movie_title);
             queryMovieAPI(mPopMovies, mKey);
+            editor.putBoolean("pop", true).apply();
 
             return true;
         }
@@ -204,6 +210,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
 
             setTitle(R.string.top_movie_title);
             queryMovieAPI(mTopRated, mKey);
+            editor.putBoolean("pop", false).apply();
 
             return true;
         }
@@ -241,6 +248,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
         bundle.putString(MOVIE_TITLE, movieResult.originalTitle);
         bundle.putString(MOVIE_DATE, movieResult.releaseDate);
         bundle.putDouble(MOVIE_RATING, movieResult.voteAverage);
+        bundle.putInt(MOVIE_ID, movieResult.id);
 
         intent.putExtras(bundle);
 
