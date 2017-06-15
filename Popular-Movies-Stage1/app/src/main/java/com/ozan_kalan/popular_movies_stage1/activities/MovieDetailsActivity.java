@@ -1,11 +1,21 @@
 package com.ozan_kalan.popular_movies_stage1.activities;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.ozan_kalan.popular_movies_stage1.Models.VideoResults;
+import com.ozan_kalan.popular_movies_stage1.Models.Videos;
 import com.ozan_kalan.popular_movies_stage1.R;
+import com.ozan_kalan.popular_movies_stage1.RecyclerView.RecyclerViewMovieAdapter;
+import com.ozan_kalan.popular_movies_stage1.RecyclerView.RecyclerViewTrailerAdapter;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -19,7 +29,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 
-public class MovieDetailsActivity extends AppCompatActivity {
+public class MovieDetailsActivity extends AppCompatActivity implements RecyclerViewTrailerAdapter.TrailerAdapterOnClickHandler {
 
     public static final String MOVIE_POSTER = "poster_url";
     public static final String MOVIE_TITLE = "movie_title";
@@ -28,11 +38,17 @@ public class MovieDetailsActivity extends AppCompatActivity {
     public static final String MOVIE_DATE = "movie_date";
     public static final String MOVIE_ID = "movie_id";
 
+    private RecyclerViewTrailerAdapter mTrailerAdapter;
+    private Gson mGson;
+
     @BindView(R.id.movie_title_txt_view) TextView mTitle;
     @BindView(R.id.release_date_txt_view) TextView mReleaseDate;
     @BindView(R.id.rating_txt_view) TextView mRating;
     @BindView(R.id.movie_poster_img_view) ImageView mPoster;
     @BindView(R.id.overview_txt_view) TextView mOverview;
+
+    @BindView(R.id.trailers_recycler_view)
+    RecyclerView mRecyclerView;
 
     private int mId = 0;
 
@@ -44,6 +60,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_movie_details);
         ButterKnife.bind(this);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        mGson = new GsonBuilder().create();
         setUpViews();
         queryVidsAndReivews(mId, getString(R.string.video_endpoint), getString(R.string.review_endpoint));
 
@@ -55,7 +72,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         try {
             String key = getString(R.string.key);
             run(id, vidEndPoint , key);
-            run(id, reviewEndPoint, key);
+//            run(id, reviewEndPoint, key);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -88,7 +105,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        System.out.println(json);
+                        Videos videos = mGson.fromJson(json, Videos.class);
+                        mTrailerAdapter.setData(videos.getResults());
                     }
                 });
             }
@@ -97,6 +115,14 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
 
     private void setUpViews() {
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+
+        mRecyclerView.setLayoutManager(layoutManager);
+        mTrailerAdapter = new RecyclerViewTrailerAdapter(this);
+        mRecyclerView.setAdapter(mTrailerAdapter);
+
+
+
         Bundle bundle = getIntent().getExtras();
         String rating = String.valueOf(bundle.getDouble(MOVIE_RATING)) + getString(R.string.rating_out_of_ten);
 
@@ -110,4 +136,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 .into(mPoster);
     }
 
+    @Override
+    public void onClick(VideoResults videoResults) {
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.you_tube) + videoResults.getKey())));
+    }
 }

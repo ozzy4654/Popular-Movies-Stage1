@@ -23,4 +23,6 @@
     <string name="content_discrip_poster_of_the_movie">poster of the movie</string>
     <string name="favorites">Favorites</string>
 
+    <string name="you_tube">http://www.youtube.com/watch?v=</string>
+
 </resources>

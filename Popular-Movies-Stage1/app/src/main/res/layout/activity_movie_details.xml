@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         android:isScrollContainer="true"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:context="com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivity">
 
     <TextView
             android:id="@+id/movie_title_txt_view"
-            android:layout_width="@dimen/zero"
+            android:layout_width="match_parent"
             android:layout_height="@dimen/details_mov_title_height"
-            android:layout_marginTop="@dimen/zero"
             android:gravity="center_vertical"
             android:paddingEnd="@dimen/med_lg_margin"
             android:paddingStart="@dimen/med_lg_margin"
@@ -28,10 +28,11 @@
             tools:layout_constraintRight_creator="1"
             android:textColor="@android:color/white"
             android:textSize="@dimen/details_title_txt_size"
-            android:textStyle="bold"/>
+            android:textStyle="bold"
+            />
     <ScrollView
-            android:layout_width="@dimen/zero"
-            android:layout_height="@dimen/zero"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/default_margin"
             android:layout_marginTop="@dimen/default_margin"
             android:fillViewport="true"
@@ -48,8 +49,18 @@
                 android:id="@+id/parent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:paddingBottom="@dimen/med_margin"
-                android:fadingEdge="vertical">
+                android:fadingEdge="vertical"
+                android:nestedScrollingEnabled="true"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/movie_title_txt_view"
+                app:layout_constraintVertical_bias="0.0">
 
             <ImageView
                     android:id="@+id/movie_poster_img_view"
@@ -88,20 +99,19 @@
                     android:layout_width="@dimen/zero"
                     android:layout_height="wrap_content"
                     android:layout_margin="@dimen/med_margin"
-                    android:layout_marginBottom="@dimen/med_lg_margin"
-                    android:layout_marginEnd="@dimen/default_margin"
+                    android:layout_marginBottom="8dp"
                     android:layout_marginLeft="@dimen/default_margin"
                     android:layout_marginRight="@dimen/default_margin"
-                    android:layout_marginStart="@dimen/default_margin"
                     android:layout_marginTop="@dimen/med_lg_margin"
                     android:gravity="center_vertical"
                     android:isScrollContainer="false"
                     android:nestedScrollingEnabled="false"
-                    app:layout_constraintBottom_toBottomOf="@+id/parent"
+                    app:layout_constraintBottom_toTopOf="@+id/trailers_title"
                     app:layout_constraintHorizontal_bias="0.0"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/movie_poster_img_view"
+                    app:layout_constraintVertical_bias="0.283"
                     android:textColorLink="@color/colorAccent"
                     android:textSize="@dimen/default_txt_size"/>
             <Button
@@ -116,9 +126,50 @@
                     app:layout_constraintTop_toBottomOf="@+id/rating_txt_view"
                     android:text="MARK AS FAVORITE"
                     android:textSize="12sp"/>
+
+            <View
+                    android:id="@+id/view"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="8dp"
+                    android:background="?android:attr/listDivider"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/overview_txt_view"/>
+            <TextView
+                    android:id="@+id/trailers_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/view"
+                    android:text="Trailers:"
+                    />
+            <android.support.v7.widget.RecyclerView
+                    android:id="@+id/trailers_recycler_view"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginTop="8dp"
+                    android:fadingEdgeLength="30dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/trailers_title"
+                    app:layout_constraintVertical_bias="0.39999998"/>
+
         </android.support.constraint.ConstraintLayout>
 
     </ScrollView>
 
-</android.support.constraint.ConstraintLayout>
+</LinearLayout>
 
