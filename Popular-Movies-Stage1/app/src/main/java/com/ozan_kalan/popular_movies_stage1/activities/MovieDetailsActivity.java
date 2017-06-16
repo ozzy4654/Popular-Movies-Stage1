@@ -11,10 +11,13 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.ozan_kalan.popular_movies_stage1.Models.ReviewList;
+import com.ozan_kalan.popular_movies_stage1.Models.ReviewResults;
 import com.ozan_kalan.popular_movies_stage1.Models.VideoResults;
 import com.ozan_kalan.popular_movies_stage1.Models.Videos;
 import com.ozan_kalan.popular_movies_stage1.R;
 import com.ozan_kalan.popular_movies_stage1.RecyclerView.RecyclerViewMovieAdapter;
+import com.ozan_kalan.popular_movies_stage1.RecyclerView.RecyclerViewReviewAdapter;
 import com.ozan_kalan.popular_movies_stage1.RecyclerView.RecyclerViewTrailerAdapter;
 import com.squareup.picasso.Picasso;
 
@@ -29,7 +32,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 
-public class MovieDetailsActivity extends AppCompatActivity implements RecyclerViewTrailerAdapter.TrailerAdapterOnClickHandler {
+public class MovieDetailsActivity extends AppCompatActivity implements RecyclerViewTrailerAdapter.TrailerAdapterOnClickHandler, RecyclerViewReviewAdapter.ReviewAdapterOnClickHandler {
 
     public static final String MOVIE_POSTER = "poster_url";
     public static final String MOVIE_TITLE = "movie_title";
@@ -39,6 +42,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
     public static final String MOVIE_ID = "movie_id";
 
     private RecyclerViewTrailerAdapter mTrailerAdapter;
+    private RecyclerViewReviewAdapter mReviewAdapter;
     private Gson mGson;
 
     @BindView(R.id.movie_title_txt_view) TextView mTitle;
@@ -49,6 +53,8 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
 
     @BindView(R.id.trailers_recycler_view)
     RecyclerView mRecyclerView;
+
+    @BindView(R.id.reviews_recycler_view) RecyclerView mReviewRecyclerView;
 
     private int mId = 0;
 
@@ -71,14 +77,14 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
     private void queryVidsAndReivews(int id, String vidEndPoint,  String reviewEndPoint) {
         try {
             String key = getString(R.string.key);
-            run(id, vidEndPoint , key);
-//            run(id, reviewEndPoint, key);
+            run(id, vidEndPoint , key, true);
+            run(id, reviewEndPoint, key, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void run(int id, String endpoint, String key) throws Exception {
+    public void run(int id, String endpoint, String key, final boolean isTrailers) throws Exception {
 
         Request request = new Request.Builder()
                 .url(getString(R.string.base_url) + id + endpoint + key)
@@ -105,8 +111,13 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Videos videos = mGson.fromJson(json, Videos.class);
-                        mTrailerAdapter.setData(videos.getResults());
+                        if (isTrailers) {
+                            Videos videos = mGson.fromJson(json, Videos.class);
+                            mTrailerAdapter.setData(videos.getResults());
+                        } else {
+                            ReviewList reviews = mGson.fromJson(json, ReviewList.class);
+                            mReviewAdapter.setData(reviews.getResults());
+                        }
                     }
                 });
             }
@@ -116,11 +127,14 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
 
     private void setUpViews() {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-
+        LinearLayoutManager reviewLyoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(layoutManager);
         mTrailerAdapter = new RecyclerViewTrailerAdapter(this);
         mRecyclerView.setAdapter(mTrailerAdapter);
 
+        mReviewRecyclerView.setLayoutManager(reviewLyoutManager);
+        mReviewAdapter = new RecyclerViewReviewAdapter(this);
+        mReviewRecyclerView.setAdapter(mReviewAdapter);
 
 
         Bundle bundle = getIntent().getExtras();
@@ -139,5 +153,10 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
     @Override
     public void onClick(VideoResults videoResults) {
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.you_tube) + videoResults.getKey())));
+    }
+
+    @Override
+    public void onClick(ReviewResults reviewResults) {
+        //no op
     }
 }
