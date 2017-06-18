@@ -115,7 +115,7 @@
                     android:textColorLink="@color/colorAccent"
                     android:textSize="@dimen/default_txt_size"/>
             <Button
-                    android:id="@+id/button"
+                    android:id="@+id/fav_btn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="75dp"
@@ -124,7 +124,7 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/movie_poster_img_view"
                     app:layout_constraintTop_toBottomOf="@+id/rating_txt_view"
-                    android:text="MARK AS FAVORITE"
+                    android:text="@string/mark_fav"
                     android:textSize="12sp"/>
 
             <View

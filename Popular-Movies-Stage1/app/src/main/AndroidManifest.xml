@@ -29,6 +29,11 @@
                     android:name="android.support.PARENT_ACTIVITY"
                     android:value="com.ozan_kalan.popular_movies_stage1.activities.MainActivity"/>
         </activity>
+        <provider
+                android:name="com.ozan_kalan.popular_movies_stage1.data.FavMovieContentProvider"
+                android:authorities="com.ozan_kalan.popular_movies_stage1"
+                android:exported="false"/>
+
     </application>
 
 </manifest>
