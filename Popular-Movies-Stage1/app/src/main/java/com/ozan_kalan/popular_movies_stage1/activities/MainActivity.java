@@ -93,7 +93,6 @@ public class MainActivity extends AppCompatActivity implements
 
         if (savedInstanceState != null) {
             setTitle(savedInstanceState.getString("title", getString(R.string.top_movie_title)));
-            mRecyclerView.scrollTo(0,savedInstanceState.getInt("my", 0));
             ArrayList<MovieResult> items = savedInstanceState.getParcelableArrayList(SEARCH_CATEGORY);
             mMovieAdapter.setData(items);
 
@@ -363,7 +362,6 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         mMovieAdapter.setData(mPosterData);
-        data.close();
 
     }
 
