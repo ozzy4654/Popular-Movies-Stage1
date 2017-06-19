@@ -101,7 +101,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Log.e(TAG, "Failed network call");
+                        Log.e(TAG, getString(R.string.failed));
                     }
                 });
             }

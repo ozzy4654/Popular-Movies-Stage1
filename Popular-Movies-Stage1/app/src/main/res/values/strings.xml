@@ -30,6 +30,11 @@
     <string name="author">Author:</string>
     <string name="trailers">Trailers:</string>
     <string name="movie_reviews">Movie Reviews</string>
+    <string name="unexpected">Unexpected code</string>
+    <string name="failed">Failed to asynchronously load data</string>
+    <string name="not_implemented">Not yet implemented</string>
+    <string name="unknown_uri">Unknown uri:</string>
+    <string name="movie_with_id_q">movieID=?</string>
 
 
 </resources>

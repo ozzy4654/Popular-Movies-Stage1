@@ -12,6 +12,8 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.ozan_kalan.popular_movies_stage1.R;
+
 import static com.ozan_kalan.popular_movies_stage1.data.FavMoviesContract.MovieEntry.COLUMN_MOVIE_ID;
 import static com.ozan_kalan.popular_movies_stage1.data.FavMoviesContract.MovieEntry.TABLE_NAME;
 
@@ -90,13 +92,12 @@ public class FavMovieContentProvider extends ContentProvider {
                 String id = uri.getPathSegments().get(1);
 
                 // Selection is the movieID column = ?, and the Selection args = the row ID from the URI
-                String mSelection = "movieID=?";
                 String[] mSelectionArgs = new String[]{id};
 
                 // Construct a query as you would normally, passing in the selection/args
                 retCursor =  db.query(TABLE_NAME,
                         projection,
-                        mSelection,
+                        context.getString(R.string.movie_with_id_q),
                         mSelectionArgs,
                         null,
                         null,
@@ -104,7 +105,7 @@ public class FavMovieContentProvider extends ContentProvider {
                 break;
 
             default:
-                throw new UnsupportedOperationException("Unknown uri: " + uri);
+                throw new UnsupportedOperationException(context.getString(R.string.unknown_uri) + uri);
         }
 
         retCursor.setNotificationUri(getContext().getContentResolver(), uri);
@@ -114,7 +115,7 @@ public class FavMovieContentProvider extends ContentProvider {
     @Nullable
     @Override
     public String getType(@NonNull Uri uri) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        throw new UnsupportedOperationException(context.getString(R.string.not_implemented));
     }
 
     @Nullable
