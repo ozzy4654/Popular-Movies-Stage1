@@ -1,14 +1,20 @@
 package com.ozan_kalan.popular_movies_stage1.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Parcelable;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,9 +26,9 @@ import com.ozan_kalan.popular_movies_stage1.Models.MovieList;
 import com.ozan_kalan.popular_movies_stage1.Models.MovieResult;
 import com.ozan_kalan.popular_movies_stage1.R;
 import com.ozan_kalan.popular_movies_stage1.RecyclerView.RecyclerViewMovieAdapter;
+import com.ozan_kalan.popular_movies_stage1.data.FavMoviesContract;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,9 +47,14 @@ import static com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivi
 import static com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivity.MOVIE_RATING;
 import static com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivity.MOVIE_TITLE;
 
-public class MainActivity extends AppCompatActivity implements RecyclerViewMovieAdapter.MovieAdapterOnClickHandler {
+public class MainActivity extends AppCompatActivity implements
+        RecyclerViewMovieAdapter.MovieAdapterOnClickHandler,
+        LoaderManager.LoaderCallbacks<Cursor>{
+
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     private static final String SEARCH_CATEGORY = "category";
+    private static final int FAV_MOVIE_LOADER_ID = 0;
     private static String BASE_URL;
 
     private RecyclerViewMovieAdapter mMovieAdapter;
@@ -56,10 +67,9 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
     private String mKey;
     private SharedPreferences.Editor editor;
 
-    @BindView(R.id.movies_recycler_view)
-    RecyclerView mRecyclerView;
-    @BindView(R.id.network_error)
-    TextView mError;
+    @BindView(R.id.movies_recycler_view) RecyclerView mRecyclerView;
+    @BindView(R.id.network_error) TextView mError;
+    @BindView(R.id.no_favs_txt_view) TextView mNoFavs;
 
     OkHttpClient client = new OkHttpClient();
 
@@ -78,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
 
         layoutManager  = new GridLayoutManager(this, 2);
         mRecyclerView.setLayoutManager(layoutManager);
-        mMovieAdapter = new RecyclerViewMovieAdapter(this);
+        mMovieAdapter = new RecyclerViewMovieAdapter( this); //this,
         mRecyclerView.setAdapter(mMovieAdapter);
 
         if (savedInstanceState != null) {
@@ -87,13 +97,19 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
             ArrayList<MovieResult> items = savedInstanceState.getParcelableArrayList(SEARCH_CATEGORY);
             mMovieAdapter.setData(items);
 
-        } else if (getSharedPreferences("movies", MODE_PRIVATE).getBoolean("pop", false)) {
+        } if (!getSharedPreferences("movies", MODE_PRIVATE).getBoolean("fav", false)) {
+            if (getSharedPreferences("movies", MODE_PRIVATE).getBoolean("pop", false)) {
             setTitle(R.string.pop_movie_title);
             queryMovieAPI(getString(R.string.popular), mKey);
+            } else {
+                setTitle(R.string.top_movie_title);
+                queryMovieAPI(getString(R.string.top_rated), mKey);
+            }
         } else {
-            setTitle(R.string.top_movie_title);
-            queryMovieAPI(getString(R.string.top_rated), mKey);
+            setTitle(R.string.favorites);
+            getSupportLoaderManager().initLoader(FAV_MOVIE_LOADER_ID, null, this);
         }
+
     }
 
     /**
@@ -122,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
      */
     private void showError() {
         mRecyclerView.setVisibility(View.INVISIBLE);
+        mNoFavs.setVisibility(View.INVISIBLE);
         mError.setVisibility(View.VISIBLE);
         mError.setText(getString(R.string.error));
     }
@@ -153,7 +170,6 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
             @Override
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
-
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -175,6 +191,14 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
                 });
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (getTitle().toString().equalsIgnoreCase(getString(R.string.favorites)))
+            getSupportLoaderManager().restartLoader(FAV_MOVIE_LOADER_ID, null, this);
     }
 
     /**
@@ -203,6 +227,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
             setTitle(R.string.pop_movie_title);
             queryMovieAPI(mPopMovies, mKey);
             editor.putBoolean("pop", true).apply();
+            editor.putBoolean("fav", false).apply();
 
             return true;
         }
@@ -211,6 +236,16 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
             setTitle(R.string.top_movie_title);
             queryMovieAPI(mTopRated, mKey);
             editor.putBoolean("pop", false).apply();
+            editor.putBoolean("fav", false).apply();
+
+            return true;
+        }
+
+        if (item.getItemId() == R.id.menu_favorites) {
+
+            setTitle(R.string.favorites);
+            getSupportLoaderManager().restartLoader(FAV_MOVIE_LOADER_ID, null, this);
+            editor.putBoolean("fav", true).apply();
 
             return true;
         }
@@ -220,6 +255,9 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
     @Override
     protected void onSaveInstanceState(Bundle output) {
         super.onSaveInstanceState(output);
+
+        if (getTitle().toString().equalsIgnoreCase(getString(R.string.favorites)))
+            return;
 
         output.putParcelableArrayList(SEARCH_CATEGORY, new ArrayList<Parcelable>(mMovieAdapter.getData()));
 
@@ -254,4 +292,84 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewMovie
 
         startActivity(intent);
     }
+
+    @SuppressLint("StaticFieldLeak")
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+
+        return new AsyncTaskLoader<Cursor>(this) {
+
+            Cursor mMovieData = null;
+
+            @Override
+            protected void onStartLoading() {
+                if (mMovieData != null)
+                    deliverResult(mMovieData);
+                forceLoad();
+            }
+
+            @Override
+            public Cursor loadInBackground() {
+                try {
+                    return getContentResolver().query(FavMoviesContract.MovieEntry.CONTENT_URI,
+                            null,
+                            null,
+                            null,
+                            FavMoviesContract.MovieEntry.COLUMN_ORIG_TITLE);
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to asynchronously load data");
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+
+            @Override
+            public void deliverResult(Cursor data) {
+                mMovieData = data;
+                super.deliverResult(data);
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+        if (data.getCount() == 1) {
+            mRecyclerView.setVisibility(View.INVISIBLE);
+            mNoFavs.setVisibility(View.VISIBLE);
+        }
+        else
+            mNoFavs.setVisibility(View.INVISIBLE);
+
+        int posterPathIndex = data.getColumnIndex(FavMoviesContract.MovieEntry.COLUMN_POSTER_PATH);
+        int titlePathIndex = data.getColumnIndex(FavMoviesContract.MovieEntry.COLUMN_ORIG_TITLE);
+        int overviewPathIndex = data.getColumnIndex(FavMoviesContract.MovieEntry.COLUMN_OVERVIEW);
+        int movIdPathIndex = data.getColumnIndex(FavMoviesContract.MovieEntry.COLUMN_MOVIE_ID);
+        int releasePathIndex = data.getColumnIndex(FavMoviesContract.MovieEntry.COLUMN_RELEASE_DATE);
+        int ratingPathIndex = data.getColumnIndex(FavMoviesContract.MovieEntry.COLUMN_RATING);
+
+        List<MovieResult> mPosterData = new ArrayList<>();
+
+        data.moveToFirst();
+
+        while(data.moveToNext()) {
+            mPosterData.add(new MovieResult(
+                    data.getString(titlePathIndex),
+                    data.getString(posterPathIndex),
+                    data.getString(overviewPathIndex),
+                    data.getString(releasePathIndex),
+                    data.getInt(movIdPathIndex),
+                    data.getDouble(ratingPathIndex)));
+        }
+
+        mMovieAdapter.setData(mPosterData);
+        data.close();
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        //no op
+    }
+
 }

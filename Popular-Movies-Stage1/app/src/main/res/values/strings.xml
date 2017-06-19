@@ -26,5 +26,6 @@
     <string name="you_tube">http://www.youtube.com/watch?v=</string>
     <string name="mark_fav">MARK AS FAVORITE</string>
     <string name="remove_fav">Remove From Favorites</string>
+    <string name="no_favs_txt">You have no Favorites.</string>
 
 </resources>
