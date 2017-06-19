@@ -1,4 +1,7 @@
 package com.ozan_kalan.popular_movies_stage1.Models;
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.List;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -7,7 +10,7 @@ import com.google.gson.annotations.SerializedName;
  * Created by ozan.kalan on 4/28/17.
  */
 
-public class MovieResult {
+public class MovieResult implements Parcelable{
     @SerializedName("poster_path")
     @Expose
     public String posterPath;
@@ -51,4 +54,100 @@ public class MovieResult {
     @Expose
     public Double voteAverage;
 
+    public void setPosterPath(String posterPath) {
+        this.posterPath = posterPath;
+    }
+
+    public void setOverview(String overview) {
+        this.overview = overview;
+    }
+
+    public void setReleaseDate(String releaseDate) {
+        this.releaseDate = releaseDate;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public void setOriginalTitle(String originalTitle) {
+        this.originalTitle = originalTitle;
+    }
+
+    public void setVoteAverage(Double voteAverage) {
+        this.voteAverage = voteAverage;
+    }
+
+    public MovieResult(Parcel in) {
+        posterPath = in.readString();
+        byte tmpAdult = in.readByte();
+        adult = tmpAdult == 0 ? null : tmpAdult == 1;
+        overview = in.readString();
+        releaseDate = in.readString();
+        if (in.readByte() == 0) {
+            id = null;
+        } else {
+            id = in.readInt();
+        }
+        originalTitle = in.readString();
+        originalLanguage = in.readString();
+        title = in.readString();
+        backdropPath = in.readString();
+        if (in.readByte() == 0) {
+            popularity = null;
+        } else {
+            popularity = in.readDouble();
+        }
+        if (in.readByte() == 0) {
+            voteCount = null;
+        } else {
+            voteCount = in.readInt();
+        }
+        byte tmpVideo = in.readByte();
+        video = tmpVideo == 0 ? null : tmpVideo == 1;
+        if (in.readByte() == 0) {
+            voteAverage = null;
+        } else {
+            voteAverage = in.readDouble();
+        }
+    }
+
+    public static final Creator<MovieResult> CREATOR = new Creator<MovieResult>() {
+        @Override
+        public MovieResult createFromParcel(Parcel in) {
+            return new MovieResult(in);
+        }
+
+        @Override
+        public MovieResult[] newArray(int size) {
+            return new MovieResult[size];
+        }
+    };
+
+    public MovieResult(String title, String posterPath, String overview, String releaseDate, int id,  double voteAverage) {
+        setId(id);
+        setOverview(overview);
+        setPosterPath(posterPath);
+        setReleaseDate(releaseDate);
+        setVoteAverage(voteAverage);
+        setOriginalTitle(title);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+
+        dest.writeString(title);
+        dest.writeString(posterPath);
+        dest.writeString(overview);
+        dest.writeString(releaseDate);
+        dest.writeInt(id);
+        dest.writeString(originalTitle);
+        dest.writeDouble(voteAverage);
+
+    }
 }

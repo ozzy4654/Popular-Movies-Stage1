@@ -14,6 +14,7 @@ public class MovieList {
     @SerializedName("page")
     @Expose
     public Integer page;
+
     @SerializedName("results")
     @Expose
     public List<MovieResult> movieResults = null;

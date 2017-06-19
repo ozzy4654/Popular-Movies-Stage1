@@ -6,7 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.ozan_kalan.popular_movies_stage1.Models.MovieList;
 import com.ozan_kalan.popular_movies_stage1.Models.MovieResult;
 import com.ozan_kalan.popular_movies_stage1.R;
 import com.squareup.picasso.Picasso;
@@ -27,7 +26,7 @@ public class RecyclerViewMovieAdapter extends RecyclerView.Adapter<RecyclerViewM
         void onClick(MovieResult movieResult);
     }
 
-    public RecyclerViewMovieAdapter(MovieAdapterOnClickHandler clickHandler) {
+    public RecyclerViewMovieAdapter( MovieAdapterOnClickHandler clickHandler) {
         mClickHandler = clickHandler;
     }
 
@@ -55,12 +54,17 @@ public class RecyclerViewMovieAdapter extends RecyclerView.Adapter<RecyclerViewM
         return mPosterData.size();
     }
 
-    /** this method updates the adapters data */
-    public void setData(MovieList movieList) {
+    /** this method updates the adapters data
+     * @param movieList*/
+    public void setData(List<MovieResult> movieList) {
         if (mPosterData != null)
             mPosterData.clear();
-        mPosterData = movieList.movieResults;
+        mPosterData = movieList;
         notifyDataSetChanged();
+    }
+
+    public List<MovieResult> getData() {
+        return mPosterData;
     }
 
     protected class MovieAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -75,8 +79,8 @@ public class RecyclerViewMovieAdapter extends RecyclerView.Adapter<RecyclerViewM
 
         @Override
         public void onClick(View v) {
-            MovieResult movieResult = mPosterData.get(getAdapterPosition());
-            mClickHandler.onClick(movieResult);
+            if (mPosterData != null)
+                mClickHandler.onClick(mPosterData.get(getAdapterPosition()));
         }
     }
 }
