@@ -1,13 +1,18 @@
 package com.ozan_kalan.popular_movies_stage1.activities;
 
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -19,12 +24,15 @@ import com.ozan_kalan.popular_movies_stage1.R;
 import com.ozan_kalan.popular_movies_stage1.RecyclerView.RecyclerViewMovieAdapter;
 import com.ozan_kalan.popular_movies_stage1.RecyclerView.RecyclerViewReviewAdapter;
 import com.ozan_kalan.popular_movies_stage1.RecyclerView.RecyclerViewTrailerAdapter;
+import com.ozan_kalan.popular_movies_stage1.data.FavMoviesContract;
+import com.ozan_kalan.popular_movies_stage1.data.FavMoviesDBHelper;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -44,19 +52,18 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
     private RecyclerViewTrailerAdapter mTrailerAdapter;
     private RecyclerViewReviewAdapter mReviewAdapter;
     private Gson mGson;
+    private int mId = 0;
+    private Bundle bundle;
 
     @BindView(R.id.movie_title_txt_view) TextView mTitle;
     @BindView(R.id.release_date_txt_view) TextView mReleaseDate;
     @BindView(R.id.rating_txt_view) TextView mRating;
     @BindView(R.id.movie_poster_img_view) ImageView mPoster;
     @BindView(R.id.overview_txt_view) TextView mOverview;
+    @BindView(R.id.fav_btn) Button mFavBtn;
 
-    @BindView(R.id.trailers_recycler_view)
-    RecyclerView mRecyclerView;
-
+    @BindView(R.id.trailers_recycler_view) RecyclerView mRecyclerView;
     @BindView(R.id.reviews_recycler_view) RecyclerView mReviewRecyclerView;
-
-    private int mId = 0;
 
     OkHttpClient client = new OkHttpClient();
 
@@ -69,9 +76,6 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
         mGson = new GsonBuilder().create();
         setUpViews();
         queryVidsAndReivews(mId, getString(R.string.video_endpoint), getString(R.string.review_endpoint));
-
-
-
     }
 
     private void queryVidsAndReivews(int id, String vidEndPoint,  String reviewEndPoint) {
@@ -126,18 +130,17 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
 
 
     private void setUpViews() {
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         LinearLayoutManager reviewLyoutManager = new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(layoutManager);
-        mTrailerAdapter = new RecyclerViewTrailerAdapter(this);
-        mRecyclerView.setAdapter(mTrailerAdapter);
-
         mReviewRecyclerView.setLayoutManager(reviewLyoutManager);
         mReviewAdapter = new RecyclerViewReviewAdapter(this);
         mReviewRecyclerView.setAdapter(mReviewAdapter);
 
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(layoutManager);
+        mTrailerAdapter = new RecyclerViewTrailerAdapter(this);
+        mRecyclerView.setAdapter(mTrailerAdapter);
 
-        Bundle bundle = getIntent().getExtras();
+        bundle = getIntent().getExtras();
         String rating = String.valueOf(bundle.getDouble(MOVIE_RATING)) + getString(R.string.rating_out_of_ten);
 
         mRating.setText(rating);
@@ -146,17 +149,94 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
         mReleaseDate.setText(bundle.getString(MOVIE_DATE).substring(0, 4));
         mTitle.setText(bundle.getString(MOVIE_TITLE));
         mId = bundle.getInt(MOVIE_ID);
+        isInFavs();
+
         Picasso.with(this).load(getString(R.string.image_base_url) + bundle.getString(MOVIE_POSTER))
                 .into(mPoster);
     }
 
     @Override
     public void onClick(VideoResults videoResults) {
+        System.out.println(" CLICK IT BITCHES   ");
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.you_tube) + videoResults.getKey())));
     }
 
     @Override
     public void onClick(ReviewResults reviewResults) {
         //no op
+        System.out.println(" CLICK IT BITCHES  2222 ");
+
     }
+
+
+    @OnClick(R.id.fav_btn)
+    public void onClick() {
+        if (mFavBtn.getText().toString().equalsIgnoreCase(getString(R.string.mark_fav)))
+            addFav();
+        else
+            removeFav();
+    }
+
+
+    /**
+     * This method checks to see if this movie is already in the DB
+     * if the getCount is greater than 0 than true else false which sets the fav_btn text
+     **/
+    private void isInFavs() {
+        Uri uri = FavMoviesContract.MovieEntry.CONTENT_URI;
+        uri = uri.buildUpon().appendPath(String.valueOf(mId)).build();
+
+        Cursor mCursor = getContentResolver().query(uri, null,
+                null,
+                null,
+                null);
+        mCursor.moveToFirst();
+        int posterPathIndex = mCursor.getColumnIndex(FavMoviesContract.MovieEntry.COLUMN_POSTER_PATH);
+
+        boolean exists = (mCursor.getCount() > 0);
+
+        System.out.println(" BOOLEAN IN FAV  "  + exists  + " " + mCursor.getCount() );
+
+        if (exists)
+            mFavBtn.setText(R.string.remove_fav);
+        else
+            mFavBtn.setText(R.string.mark_fav);
+
+        mCursor.close();
+    }
+
+    /**
+     * For inserting a new Fav movie to the DB
+     **/
+    private void addFav() {
+        ContentValues contentValues = new ContentValues();
+
+        contentValues.put(FavMoviesContract.MovieEntry.COLUMN_MOVIE_ID, mId);
+        contentValues.put(FavMoviesContract.MovieEntry.COLUMN_ORIG_TITLE, mTitle.getText().toString());
+        contentValues.put(FavMoviesContract.MovieEntry.COLUMN_RELEASE_DATE, mReleaseDate.getText().toString());
+        contentValues.put(FavMoviesContract.MovieEntry.COLUMN_OVERVIEW, mOverview.getText().toString());
+        contentValues.put(FavMoviesContract.MovieEntry.COLUMN_POSTER_PATH, bundle.getString(MOVIE_POSTER));
+        contentValues.put(FavMoviesContract.MovieEntry.COLUMN_RATING, bundle.getDouble(MOVIE_RATING));
+
+        Uri uri = getContentResolver().insert(FavMoviesContract.MovieEntry.CONTENT_URI, contentValues);
+
+        if(uri != null)
+            Toast.makeText(getBaseContext(), uri.toString(), Toast.LENGTH_LONG).show();
+
+        mFavBtn.setText(R.string.remove_fav);
+    }
+
+    /**
+     * For deleting a Fav movie from the DB
+     **/
+    private void removeFav() {
+
+        Uri uri = FavMoviesContract.MovieEntry.CONTENT_URI;
+        uri = uri.buildUpon().appendPath(String.valueOf(mId)).build();
+        System.out.println(" URI DELETE     " + uri);
+
+        getContentResolver().delete(uri, null, null);
+        mFavBtn.setText(R.string.mark_fav);
+    }
+
 }
