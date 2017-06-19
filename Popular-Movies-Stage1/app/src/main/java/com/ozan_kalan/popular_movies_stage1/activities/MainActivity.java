@@ -186,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+                if (!response.isSuccessful()) throw new IOException(getString(R.string.unexpected) + response);
 
                 final String json = response.body().string();
                 runOnUiThread(new Runnable() {
@@ -322,7 +322,7 @@ public class MainActivity extends AppCompatActivity implements
                             null,
                             FavMoviesContract.MovieEntry.COLUMN_ORIG_TITLE);
                 } catch (Exception e) {
-                    Log.e(TAG, "Failed to asynchronously load data");
+                    Log.e(TAG, getString(R.string.failed));
                     e.printStackTrace();
                     return null;
                 }
