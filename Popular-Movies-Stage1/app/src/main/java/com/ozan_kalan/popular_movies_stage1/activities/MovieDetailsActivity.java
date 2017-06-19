@@ -3,12 +3,12 @@ package com.ozan_kalan.popular_movies_stage1.activities;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -21,11 +21,9 @@ import com.ozan_kalan.popular_movies_stage1.Models.ReviewResults;
 import com.ozan_kalan.popular_movies_stage1.Models.VideoResults;
 import com.ozan_kalan.popular_movies_stage1.Models.Videos;
 import com.ozan_kalan.popular_movies_stage1.R;
-import com.ozan_kalan.popular_movies_stage1.RecyclerView.RecyclerViewMovieAdapter;
 import com.ozan_kalan.popular_movies_stage1.RecyclerView.RecyclerViewReviewAdapter;
 import com.ozan_kalan.popular_movies_stage1.RecyclerView.RecyclerViewTrailerAdapter;
 import com.ozan_kalan.popular_movies_stage1.data.FavMoviesContract;
-import com.ozan_kalan.popular_movies_stage1.data.FavMoviesDBHelper;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -42,6 +40,7 @@ import okhttp3.Response;
 
 public class MovieDetailsActivity extends AppCompatActivity implements RecyclerViewTrailerAdapter.TrailerAdapterOnClickHandler, RecyclerViewReviewAdapter.ReviewAdapterOnClickHandler {
 
+    private static final String TAG = MovieDetailsActivity.class.getSimpleName();
     public static final String MOVIE_POSTER = "poster_url";
     public static final String MOVIE_TITLE = "movie_title";
     public static final String MOVIE_RATING = "movie_rating";
@@ -102,7 +101,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        System.out.println("FUCKKKKKKK UUUU ");
+                        Log.e(TAG, "Failed network call");
                     }
                 });
             }
@@ -157,15 +156,12 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
 
     @Override
     public void onClick(VideoResults videoResults) {
-        System.out.println(" CLICK IT BITCHES   ");
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.you_tube) + videoResults.getKey())));
     }
 
     @Override
     public void onClick(ReviewResults reviewResults) {
         //no op
-        System.out.println(" CLICK IT BITCHES  2222 ");
-
     }
 
 
@@ -194,8 +190,6 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
         int posterPathIndex = mCursor.getColumnIndex(FavMoviesContract.MovieEntry.COLUMN_POSTER_PATH);
 
         boolean exists = (mCursor.getCount() > 0);
-
-        System.out.println(" BOOLEAN IN FAV  "  + exists  + " " + mCursor.getCount() );
 
         if (exists)
             mFavBtn.setText(R.string.remove_fav);
@@ -233,8 +227,6 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
 
         Uri uri = FavMoviesContract.MovieEntry.CONTENT_URI;
         uri = uri.buildUpon().appendPath(String.valueOf(mId)).build();
-        System.out.println(" URI DELETE     " + uri);
-
         getContentResolver().delete(uri, null, null);
         mFavBtn.setText(R.string.mark_fav);
     }
