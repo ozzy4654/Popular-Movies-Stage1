@@ -37,7 +37,7 @@ public class RecyclerViewReviewAdapter extends RecyclerView.Adapter<RecyclerView
 
     @Override
     public void onBindViewHolder(RecyclerViewReviewAdapter.ReviewAdapterViewHolder holder, int position) {
-        holder.mAutherReview.setText(mReviewData.get(position).getAuthor());
+        holder.mAuthor.setText(mReviewData.get(position).getAuthor());
         holder.mAutherReview.setText(mReviewData.get(position).getContent());
     }
 

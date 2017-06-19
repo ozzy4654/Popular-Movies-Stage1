@@ -49,11 +49,17 @@ import static com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivi
 
 public class MainActivity extends AppCompatActivity implements
         RecyclerViewMovieAdapter.MovieAdapterOnClickHandler,
-        LoaderManager.LoaderCallbacks<Cursor>{
+        LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private static final String SEARCH_CATEGORY = "category";
+    public static final String SHARED_PRFS = "movies";
+    public static final String SHARED_POP = "pop";
+    public static final String SHARED_FAV = "fav";
+    public static final String SHARED_TITLE = "title";
+    public static final String SHARED_SEARCH = "search";
+
     private static final int FAV_MOVIE_LOADER_ID = 0;
     private static String BASE_URL;
 
@@ -80,26 +86,27 @@ public class MainActivity extends AppCompatActivity implements
         ButterKnife.bind(this);
 
         BASE_URL = getString(R.string.base_url);
-        editor = getSharedPreferences("movies", MODE_PRIVATE).edit();
+        editor = getSharedPreferences(SHARED_PRFS, MODE_PRIVATE).edit();
         mTopRated = getString(R.string.top_rated);
         mPopMovies = getString(R.string.popular);
         mKey = getString(R.string.key);
         mGson = new GsonBuilder().create();
 
-        layoutManager  = new GridLayoutManager(this, 2);
+        layoutManager = new GridLayoutManager(getApplicationContext(), 2);
         mRecyclerView.setLayoutManager(layoutManager);
-        mMovieAdapter = new RecyclerViewMovieAdapter( this); //this,
+        mMovieAdapter = new RecyclerViewMovieAdapter(this);
         mRecyclerView.setAdapter(mMovieAdapter);
 
         if (savedInstanceState != null) {
-            setTitle(savedInstanceState.getString("title", getString(R.string.top_movie_title)));
+            setTitle(savedInstanceState.getString(SHARED_TITLE, getString(R.string.top_movie_title)));
             ArrayList<MovieResult> items = savedInstanceState.getParcelableArrayList(SEARCH_CATEGORY);
             mMovieAdapter.setData(items);
 
-        } if (!getSharedPreferences("movies", MODE_PRIVATE).getBoolean("fav", false)) {
-            if (getSharedPreferences("movies", MODE_PRIVATE).getBoolean("pop", false)) {
-            setTitle(R.string.pop_movie_title);
-            queryMovieAPI(getString(R.string.popular), mKey);
+        }
+        if (!getSharedPreferences(SHARED_PRFS, MODE_PRIVATE).getBoolean(SHARED_FAV, false)) {
+            if (getSharedPreferences(SHARED_PRFS, MODE_PRIVATE).getBoolean(SHARED_POP, false)) {
+                setTitle(R.string.pop_movie_title);
+                queryMovieAPI(getString(R.string.popular), mKey);
             } else {
                 setTitle(R.string.top_movie_title);
                 queryMovieAPI(getString(R.string.top_rated), mKey);
@@ -225,8 +232,8 @@ public class MainActivity extends AppCompatActivity implements
 
             setTitle(R.string.pop_movie_title);
             queryMovieAPI(mPopMovies, mKey);
-            editor.putBoolean("pop", true).apply();
-            editor.putBoolean("fav", false).apply();
+            editor.putBoolean(SHARED_POP, true).apply();
+            editor.putBoolean(SHARED_FAV, false).apply();
 
             return true;
         }
@@ -234,8 +241,8 @@ public class MainActivity extends AppCompatActivity implements
 
             setTitle(R.string.top_movie_title);
             queryMovieAPI(mTopRated, mKey);
-            editor.putBoolean("pop", false).apply();
-            editor.putBoolean("fav", false).apply();
+            editor.putBoolean(SHARED_POP, false).apply();
+            editor.putBoolean(SHARED_FAV, false).apply();
 
             return true;
         }
@@ -244,7 +251,7 @@ public class MainActivity extends AppCompatActivity implements
 
             setTitle(R.string.favorites);
             getSupportLoaderManager().restartLoader(FAV_MOVIE_LOADER_ID, null, this);
-            editor.putBoolean("fav", true).apply();
+            editor.putBoolean(SHARED_FAV, true).apply();
 
             return true;
         }
@@ -260,13 +267,12 @@ public class MainActivity extends AppCompatActivity implements
 
         output.putParcelableArrayList(SEARCH_CATEGORY, new ArrayList<Parcelable>(mMovieAdapter.getData()));
 
-        if(getTitle().toString().equalsIgnoreCase(getString(R.string.pop_movie_title))) {
-            output.putString("search", getString(R.string.popular));
-            output.putString("title", getString(R.string.pop_movie_title));
-        }
-        else {
-            output.putString("search", getString(R.string.top_rated));
-            output.putString("title", getString(R.string.top_movie_title));
+        if (getTitle().toString().equalsIgnoreCase(getString(R.string.pop_movie_title))) {
+            output.putString(SHARED_SEARCH, getString(R.string.popular));
+            output.putString(SHARED_TITLE, getString(R.string.pop_movie_title));
+        } else {
+            output.putString(SHARED_SEARCH, getString(R.string.top_rated));
+            output.putString(SHARED_TITLE, getString(R.string.top_movie_title));
         }
     }
 
@@ -276,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements
      */
     @Override
     public void onClick(MovieResult movieResult) {
-        Intent intent = new Intent(this, MovieDetailsActivity.class);
+        Intent intent = new Intent(getApplicationContext(), MovieDetailsActivity.class);
 
         Bundle bundle = new Bundle();
 
@@ -296,7 +302,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
-        return new AsyncTaskLoader<Cursor>(this) {
+        return new AsyncTaskLoader<Cursor>(getApplicationContext()) {
 
             Cursor mMovieData = null;
 
@@ -336,8 +342,7 @@ public class MainActivity extends AppCompatActivity implements
         if (data.getCount() == 1) {
             mRecyclerView.setVisibility(View.INVISIBLE);
             mNoFavs.setVisibility(View.VISIBLE);
-        }
-        else
+        } else
             mNoFavs.setVisibility(View.INVISIBLE);
 
         int posterPathIndex = data.getColumnIndex(FavMoviesContract.MovieEntry.COLUMN_POSTER_PATH);
@@ -351,7 +356,7 @@ public class MainActivity extends AppCompatActivity implements
 
         data.moveToFirst();
 
-        while(data.moveToNext()) {
+        while (data.moveToNext()) {
             mPosterData.add(new MovieResult(
                     data.getString(titlePathIndex),
                     data.getString(posterPathIndex),

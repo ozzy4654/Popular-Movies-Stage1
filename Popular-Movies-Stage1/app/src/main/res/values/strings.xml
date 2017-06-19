@@ -27,5 +27,9 @@
     <string name="mark_fav">MARK AS FAVORITE</string>
     <string name="remove_fav">Remove From Favorites</string>
     <string name="no_favs_txt">You have no Favorites.</string>
+    <string name="author">Author:</string>
+    <string name="trailers">Trailers:</string>
+    <string name="movie_reviews">Movie Reviews</string>
+
 
 </resources>

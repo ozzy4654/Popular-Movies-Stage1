@@ -42,7 +42,8 @@ public class RecyclerViewTrailerAdapter extends RecyclerView.Adapter<RecyclerVie
 
     @Override
     public void onBindViewHolder(TrailerAdapterViewHolder holder, int position) {
-        holder.mTrailerTitle.setText(mTrailerData.get(position).getName()  );
+        holder.mTrailerTitle.setText(mTrailerData.get(position).getName());
+
 
     }
     public void setData(List<VideoResults> videoList) {
