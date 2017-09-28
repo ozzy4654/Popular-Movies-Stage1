@@ -34,6 +34,9 @@
                 android:authorities="com.ozan_kalan.popular_movies_stage1"
                 android:exported="false"/>
 
+        <service
+            android:name=".Services.GetMoviesService"
+            android:exported="false"/>
     </application>
 
 </manifest>

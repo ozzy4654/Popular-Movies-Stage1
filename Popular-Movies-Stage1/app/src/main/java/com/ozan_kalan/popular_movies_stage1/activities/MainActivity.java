@@ -1,7 +1,10 @@
 package com.ozan_kalan.popular_movies_stage1.activities;
 
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
@@ -26,19 +29,14 @@ import com.ozan_kalan.popular_movies_stage1.Models.MovieList;
 import com.ozan_kalan.popular_movies_stage1.Models.MovieResult;
 import com.ozan_kalan.popular_movies_stage1.R;
 import com.ozan_kalan.popular_movies_stage1.RecyclerView.RecyclerViewMovieAdapter;
+import com.ozan_kalan.popular_movies_stage1.Services.GetMoviesService;
 import com.ozan_kalan.popular_movies_stage1.data.FavMoviesContract;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 import static com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivity.MOVIE_DATE;
 import static com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivity.MOVIE_ID;
@@ -62,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private static final int FAV_MOVIE_LOADER_ID = 0;
     private static String BASE_URL;
+    private MyBroadcastReceiver myBroadcastReceiver;
 
     private RecyclerViewMovieAdapter mMovieAdapter;
     private Gson mGson;
@@ -76,8 +75,6 @@ public class MainActivity extends AppCompatActivity implements
     @BindView(R.id.movies_recycler_view) RecyclerView mRecyclerView;
     @BindView(R.id.network_error) TextView mError;
     @BindView(R.id.no_favs_txt_view) TextView mNoFavs;
-
-    OkHttpClient client = new OkHttpClient();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +93,13 @@ public class MainActivity extends AppCompatActivity implements
         mRecyclerView.setLayoutManager(layoutManager);
         mMovieAdapter = new RecyclerViewMovieAdapter(this);
         mRecyclerView.setAdapter(mMovieAdapter);
+
+        myBroadcastReceiver = new MyBroadcastReceiver();
+
+        //register BroadcastReceiver
+        IntentFilter intentFilter = new IntentFilter(GetMoviesService.ACTION_MyIntentService);
+        intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
+        registerReceiver(myBroadcastReceiver, intentFilter);
 
         if (savedInstanceState != null) {
             setTitle(savedInstanceState.getString(SHARED_TITLE, getString(R.string.top_movie_title)));
@@ -126,9 +130,14 @@ public class MainActivity extends AppCompatActivity implements
     private void queryMovieAPI(String query, String key) {
         try {
 
-            if (isOnline())
-                run(query, key);
-            else
+            if (isOnline()) {
+                Intent mServiceIntent = new Intent(this, GetMoviesService.class);
+                mServiceIntent.putExtra("mKey", key);
+                mServiceIntent.putExtra("endPoint", query);
+                mServiceIntent.putExtra("baseUrl", BASE_URL);
+                this.startService(mServiceIntent);
+
+            } else
                 showError();
 
         } catch (Exception e) {
@@ -137,6 +146,11 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        unregisterReceiver(myBroadcastReceiver);
+        super.onDestroy();
+    }
 
     /**
      * In the event a network error occurred
@@ -159,44 +173,6 @@ public class MainActivity extends AppCompatActivity implements
                 (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         return netInfo != null && netInfo.isConnectedOrConnecting();
-    }
-
-    /**
-     * This method will build our query and request
-     * to call the Api to retrieve the data.
-     * it will also handle a request failure
-     */
-    public void run(String endPoint, String key) throws Exception {
-
-        Request request = new Request.Builder()
-                .url(BASE_URL + endPoint + key)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        showError();
-                    }
-                });
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if (!response.isSuccessful()) throw new IOException(getString(R.string.unexpected) + response);
-
-                final String json = response.body().string();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        setAdapter(json);
-                    }
-                });
-            }
-        });
     }
 
     @Override
@@ -375,4 +351,13 @@ public class MainActivity extends AppCompatActivity implements
         //no op
     }
 
+    private class MyBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (!intent.getBooleanExtra("hasFaild", false)) {
+                setAdapter(intent.getStringExtra(GetMoviesService.EXTRA_KEY_OUT));
+            }else
+                showError();
+        }
+    }
 }
