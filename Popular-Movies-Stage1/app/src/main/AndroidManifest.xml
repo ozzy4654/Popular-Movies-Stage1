@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-            android:name=".Application.PopularMoviesStage1App"
+            android:name=".application.PopularMoviesStage1App"
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
@@ -35,7 +35,7 @@
                 android:exported="false"/>
 
         <service
-            android:name=".Services.GetMoviesService"
+            android:name=".services.GetMoviesService"
             android:exported="false"/>
     </application>
 

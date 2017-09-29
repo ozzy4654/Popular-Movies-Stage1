@@ -7,8 +7,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Parcelable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
@@ -25,11 +23,11 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.ozan_kalan.popular_movies_stage1.Models.MovieList;
-import com.ozan_kalan.popular_movies_stage1.Models.MovieResult;
 import com.ozan_kalan.popular_movies_stage1.R;
-import com.ozan_kalan.popular_movies_stage1.RecyclerView.RecyclerViewMovieAdapter;
-import com.ozan_kalan.popular_movies_stage1.Services.GetMoviesService;
+import com.ozan_kalan.popular_movies_stage1.models.MovieList;
+import com.ozan_kalan.popular_movies_stage1.models.MovieResult;
+import com.ozan_kalan.popular_movies_stage1.adapters.RecyclerViewMovieAdapter;
+import com.ozan_kalan.popular_movies_stage1.services.GetMoviesService;
 import com.ozan_kalan.popular_movies_stage1.data.FavMoviesContract;
 
 import java.util.ArrayList;
@@ -44,6 +42,7 @@ import static com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivi
 import static com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivity.MOVIE_POSTER;
 import static com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivity.MOVIE_RATING;
 import static com.ozan_kalan.popular_movies_stage1.activities.MovieDetailsActivity.MOVIE_TITLE;
+import static com.ozan_kalan.popular_movies_stage1.utils.NetworkUtils.isOnline;
 
 public class MainActivity extends AppCompatActivity implements
         RecyclerViewMovieAdapter.MovieAdapterOnClickHandler,
@@ -72,9 +71,12 @@ public class MainActivity extends AppCompatActivity implements
     private String mKey;
     private SharedPreferences.Editor editor;
 
-    @BindView(R.id.movies_recycler_view) RecyclerView mRecyclerView;
-    @BindView(R.id.network_error) TextView mError;
-    @BindView(R.id.no_favs_txt_view) TextView mNoFavs;
+    @BindView(R.id.movies_recycler_view)
+    RecyclerView mRecyclerView;
+    @BindView(R.id.network_error)
+    TextView mError;
+    @BindView(R.id.no_favs_txt_view)
+    TextView mNoFavs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,28 +130,22 @@ public class MainActivity extends AppCompatActivity implements
      * notify the user of a network issue
      */
     private void queryMovieAPI(String query, String key) {
-        try {
 
-            if (isOnline()) {
-                Intent mServiceIntent = new Intent(this, GetMoviesService.class);
-                mServiceIntent.putExtra("mKey", key);
-                mServiceIntent.putExtra("endPoint", query);
-                mServiceIntent.putExtra("baseUrl", BASE_URL);
-                this.startService(mServiceIntent);
+        if (isOnline(this)) {
+            Intent mServiceIntent = new Intent(this, GetMoviesService.class);
+            mServiceIntent.putExtra("mKey", key);
+            mServiceIntent.putExtra("endPoint", query);
+            mServiceIntent.putExtra("baseUrl", BASE_URL);
+            this.startService(mServiceIntent);
 
-            } else
-                showError();
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else
             showError();
-        }
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onPause() {
         unregisterReceiver(myBroadcastReceiver);
-        super.onDestroy();
+        super.onPause();
     }
 
     /**
@@ -161,18 +157,6 @@ public class MainActivity extends AppCompatActivity implements
         mNoFavs.setVisibility(View.INVISIBLE);
         mError.setVisibility(View.VISIBLE);
         mError.setText(getString(R.string.error));
-    }
-
-    /**
-     * This method allow the app to check for network changes
-     * so in the event of Network/wifi is down or in airplane mode
-     * the app will not crash
-     */
-    public boolean isOnline() {
-        ConnectivityManager cm =
-                (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
     @Override
@@ -355,8 +339,8 @@ public class MainActivity extends AppCompatActivity implements
         @Override
         public void onReceive(Context context, Intent intent) {
             if (!intent.getBooleanExtra("hasFaild", false)) {
-                setAdapter(intent.getStringExtra(GetMoviesService.EXTRA_KEY_OUT));
-            }else
+                setAdapter(intent.getStringExtra(GetMoviesService.MOVIE_RESULTS));
+            } else
                 showError();
         }
     }

@@ -1,16 +1,13 @@
-package com.ozan_kalan.popular_movies_stage1.RecyclerView;
+package com.ozan_kalan.popular_movies_stage1.adapters;
 
 import android.support.v7.widget.RecyclerView;
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.ozan_kalan.popular_movies_stage1.Models.ReviewResults;
 import com.ozan_kalan.popular_movies_stage1.R;
-
-import org.w3c.dom.Text;
+import com.ozan_kalan.popular_movies_stage1.models.ReviewResults;
 
 import java.util.List;
 

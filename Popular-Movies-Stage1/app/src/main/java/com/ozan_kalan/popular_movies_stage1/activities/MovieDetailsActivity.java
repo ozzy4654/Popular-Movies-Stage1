@@ -1,41 +1,42 @@
 package com.ozan_kalan.popular_movies_stage1.activities;
 
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.ozan_kalan.popular_movies_stage1.Models.ReviewList;
-import com.ozan_kalan.popular_movies_stage1.Models.ReviewResults;
-import com.ozan_kalan.popular_movies_stage1.Models.VideoResults;
-import com.ozan_kalan.popular_movies_stage1.Models.Videos;
 import com.ozan_kalan.popular_movies_stage1.R;
-import com.ozan_kalan.popular_movies_stage1.RecyclerView.RecyclerViewReviewAdapter;
-import com.ozan_kalan.popular_movies_stage1.RecyclerView.RecyclerViewTrailerAdapter;
+import com.ozan_kalan.popular_movies_stage1.models.ReviewList;
+import com.ozan_kalan.popular_movies_stage1.models.ReviewResults;
+import com.ozan_kalan.popular_movies_stage1.models.VideoResults;
+import com.ozan_kalan.popular_movies_stage1.models.Videos;
+import com.ozan_kalan.popular_movies_stage1.adapters.RecyclerViewReviewAdapter;
+import com.ozan_kalan.popular_movies_stage1.adapters.RecyclerViewTrailerAdapter;
 import com.ozan_kalan.popular_movies_stage1.data.FavMoviesContract;
+import com.ozan_kalan.popular_movies_stage1.services.GetMoviesService;
 import com.squareup.picasso.Picasso;
 
-import java.io.IOException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+
+import static com.ozan_kalan.popular_movies_stage1.utils.NetworkUtils.isOnline;
 
 
 public class MovieDetailsActivity extends AppCompatActivity implements RecyclerViewTrailerAdapter.TrailerAdapterOnClickHandler, RecyclerViewReviewAdapter.ReviewAdapterOnClickHandler {
@@ -53,7 +54,10 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
     private Gson mGson;
     private int mId = 0;
     private Bundle bundle;
+    private boolean isError = false;
+    private DetailsBroadcastReceiver detailsBroadcastReceiver;
 
+    @BindView(R.id.details_scroll_view) ScrollView mScrollView;
     @BindView(R.id.movie_title_txt_view) TextView mTitle;
     @BindView(R.id.release_date_txt_view) TextView mReleaseDate;
     @BindView(R.id.rating_txt_view) TextView mRating;
@@ -64,7 +68,11 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
     @BindView(R.id.trailers_recycler_view) RecyclerView mRecyclerView;
     @BindView(R.id.reviews_recycler_view) RecyclerView mReviewRecyclerView;
 
-    OkHttpClient client = new OkHttpClient();
+    @Override
+    protected void onPause() {
+        unregisterReceiver(detailsBroadcastReceiver);
+        super.onPause();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,61 +80,38 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
         setContentView(R.layout.activity_movie_details);
         ButterKnife.bind(this);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        detailsBroadcastReceiver = new DetailsBroadcastReceiver();
+
+        //register BroadcastReceiver
+        IntentFilter intentFilter = new IntentFilter(GetMoviesService.ACTION_MyIntentService);
+        intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
+        registerReceiver(detailsBroadcastReceiver, intentFilter);
+
         mGson = new GsonBuilder().create();
         setUpViews();
         queryVidsAndReivews(mId, getString(R.string.video_endpoint), getString(R.string.review_endpoint));
     }
 
     private void queryVidsAndReivews(int id, String vidEndPoint,  String reviewEndPoint) {
-        try {
-            String key = getString(R.string.key);
-            run(id, vidEndPoint , key, true);
-            run(id, reviewEndPoint, key, false);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        if (isOnline(this)) {
+            Intent mServiceIntent = new Intent(this, GetMoviesService.class);
+            mServiceIntent.putExtra("mKey", getString(R.string.key));
+            mServiceIntent.putExtra("id", id);
+            mServiceIntent.putExtra("baseUrl", getString(R.string.base_url));
+            mServiceIntent.putExtra("trailersEP", vidEndPoint);
+            mServiceIntent.putExtra("reviewEP", reviewEndPoint);
+            this.startService(mServiceIntent);
+
+        }else
+            showError();
     }
 
-    public void run(int id, String endpoint, String key, final boolean isTrailers) throws Exception {
-
-        Request request = new Request.Builder()
-                .url(getString(R.string.base_url) + id + endpoint + key)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.e(TAG, getString(R.string.failed));
-                    }
-                });
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-
-                final String json = response.body().string();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (isTrailers) {
-                            Videos videos = mGson.fromJson(json, Videos.class);
-                            mTrailerAdapter.setData(videos.getResults());
-                        } else {
-                            ReviewList reviews = mGson.fromJson(json, ReviewList.class);
-                            mReviewAdapter.setData(reviews.getResults());
-                        }
-                    }
-                });
-            }
-        });
+    private void showError() {
+        isError = true;
+        mTitle.setVisibility(View.INVISIBLE);
+        mScrollView.setVisibility(View.INVISIBLE);
     }
-
 
     private void setUpViews() {
         LinearLayoutManager reviewLyoutManager = new LinearLayoutManager(this);
@@ -164,7 +149,6 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
         //no op
     }
 
-
     @OnClick(R.id.fav_btn)
     public void onClick() {
         if (mFavBtn.getText().toString().equalsIgnoreCase(getString(R.string.mark_fav)))
@@ -172,7 +156,6 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
         else
             removeFav();
     }
-
 
     /**
      * This method checks to see if this movie is already in the DB
@@ -231,4 +214,21 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
         mFavBtn.setText(R.string.mark_fav);
     }
 
+    private class DetailsBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (isError){
+                mTitle.setVisibility(View.VISIBLE);
+                mScrollView.setVisibility(View.VISIBLE);
+            }
+
+            Videos videos = mGson.fromJson(intent.
+                    getStringExtra(GetMoviesService.TRAILER_RESULTS), Videos.class);
+            mTrailerAdapter.setData(videos.getResults());
+
+            ReviewList reviews = mGson.fromJson(intent.
+                    getStringExtra(GetMoviesService.REVIEW_RESULTS), ReviewList.class);
+            mReviewAdapter.setData(reviews.getResults());
+        }
+    }
 }

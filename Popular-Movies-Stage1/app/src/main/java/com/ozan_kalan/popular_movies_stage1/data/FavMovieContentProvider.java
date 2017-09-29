@@ -7,14 +7,13 @@ import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+
 import com.ozan_kalan.popular_movies_stage1.R;
 
-import static com.ozan_kalan.popular_movies_stage1.data.FavMoviesContract.MovieEntry.COLUMN_MOVIE_ID;
 import static com.ozan_kalan.popular_movies_stage1.data.FavMoviesContract.MovieEntry.TABLE_NAME;
 
 /**
