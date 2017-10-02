@@ -55,6 +55,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
     private int mId = 0;
     private Bundle bundle;
     private boolean isError = false;
+    private boolean isReg = false;
     private DetailsBroadcastReceiver detailsBroadcastReceiver;
 
     @BindView(R.id.details_scroll_view) ScrollView mScrollView;
@@ -70,7 +71,10 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
 
     @Override
     protected void onPause() {
-        unregisterReceiver(detailsBroadcastReceiver);
+        if(isReg) {
+            isReg = true;
+            unregisterReceiver(detailsBroadcastReceiver);
+        }
         super.onPause();
     }
 
@@ -81,13 +85,6 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
         ButterKnife.bind(this);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        detailsBroadcastReceiver = new DetailsBroadcastReceiver();
-
-        //register BroadcastReceiver
-        IntentFilter intentFilter = new IntentFilter(GetMoviesService.ACTION_MyIntentService);
-        intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
-        registerReceiver(detailsBroadcastReceiver, intentFilter);
-
         mGson = new GsonBuilder().create();
         setUpViews();
         queryVidsAndReivews(mId, getString(R.string.video_endpoint), getString(R.string.review_endpoint));
@@ -95,6 +92,14 @@ public class MovieDetailsActivity extends AppCompatActivity implements RecyclerV
 
     private void queryVidsAndReivews(int id, String vidEndPoint,  String reviewEndPoint) {
         if (isOnline(this)) {
+            detailsBroadcastReceiver = new DetailsBroadcastReceiver();
+
+            //register BroadcastReceiver
+            IntentFilter intentFilter = new IntentFilter(GetMoviesService.ACTION_MyIntentService);
+            intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
+            registerReceiver(detailsBroadcastReceiver, intentFilter);
+            isReg = true;
+
             Intent mServiceIntent = new Intent(this, GetMoviesService.class);
             mServiceIntent.putExtra("mKey", getString(R.string.key));
             mServiceIntent.putExtra("id", id);

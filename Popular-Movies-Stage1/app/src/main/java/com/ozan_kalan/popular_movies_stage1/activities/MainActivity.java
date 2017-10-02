@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements
     private RecyclerViewMovieAdapter mMovieAdapter;
     private Gson mGson;
     private GridLayoutManager layoutManager;
-
+    private boolean isReg;
     private MovieList mMovieList;
     private String mTopRated;
     private String mPopMovies;
@@ -98,10 +98,6 @@ public class MainActivity extends AppCompatActivity implements
 
         myBroadcastReceiver = new MyBroadcastReceiver();
 
-        //register BroadcastReceiver
-        IntentFilter intentFilter = new IntentFilter(GetMoviesService.ACTION_MyIntentService);
-        intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
-        registerReceiver(myBroadcastReceiver, intentFilter);
 
         if (savedInstanceState != null) {
             setTitle(savedInstanceState.getString(SHARED_TITLE, getString(R.string.top_movie_title)));
@@ -132,6 +128,12 @@ public class MainActivity extends AppCompatActivity implements
     private void queryMovieAPI(String query, String key) {
 
         if (isOnline(this)) {
+            //register BroadcastReceiver
+            IntentFilter intentFilter = new IntentFilter(GetMoviesService.ACTION_MyIntentService);
+            intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
+            registerReceiver(myBroadcastReceiver, intentFilter);
+            isReg = true;
+
             Intent mServiceIntent = new Intent(this, GetMoviesService.class);
             mServiceIntent.putExtra("mKey", key);
             mServiceIntent.putExtra("endPoint", query);
@@ -144,7 +146,10 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void onPause() {
-        unregisterReceiver(myBroadcastReceiver);
+        if (isReg) {
+            isReg = false;
+            unregisterReceiver(myBroadcastReceiver);
+        }
         super.onPause();
     }
 
